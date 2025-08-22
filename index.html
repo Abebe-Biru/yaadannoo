@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✨ Yaadannoo - Your Emoji-Powered Notes</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="app-header">
+            <div class="header-content">
+                <h1><span class="sparkle">✨</span> Yaadannoo</h1>
+                <p class="tagline">Your thoughts, beautifully organized <span class="waving-hand">👋</span></p>
+            </div>
+            <div class="header-actions">
+                <button id="theme-toggle" class="icon-btn" title="Change theme">
+                    <i class="fas fa-sun"></i>
+                </button>
+                <button id="new-note-btn" class="icon-btn" title="New Note">
+                    <i class="fas fa-plus"></i>
+                </button>
+            </div>
+        </header>
+
+        <div class="notes-list" id="notes-list">
+            <div class="list-header">
+                <h2><i class="fas fa-sticky-note"></i> Your Notes <span id="notes-count">(0)</span></h2>
+                <div class="search-container">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="search-notes" placeholder="Find your notes...">
+                </div>
+            </div>
+            <div class="notes-container" id="notes-container"></div>
+        </div>
+    </div>
+
+    <!-- Modal Structure -->
+    <div id="note-modal" class="modal-container">
+        <div class="modal-overlay" id="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="editor">
+                <!-- STYLING FIX: New wrapper for the entire header row -->
+                <div class="editor-main-header">
+                    <div class="editor-header">
+                        <div class="note-tags">
+                            <span class="tag" data-tag="idea"><i class="fas fa-lightbulb"></i> Idea</span>
+                            <span class="tag" data-tag="task"><i class="fas fa-tasks"></i> Task</span>
+                            <span class="tag" data-tag="meeting"><i class="fas fa-video"></i> Meeting</span>
+                            <span class="tag" data-tag="personal"><i class="fas fa-heart"></i> Personal</span>
+                        </div>
+                        <div id="emoji-picker-container" class="header-actions">
+                             <button id="emoji-picker-btn" class="icon-btn" title="Insert emoji">
+                                <i class="far fa-smile"></i>
+                            </button>
+                            <div id="emoji-picker" class="emoji-picker">
+                                 <div class="emoji-category">
+                                    <h3><i class="fas fa-smile"></i> Smileys</h3>
+                                    <div class="emoji-grid">
+                                        <span>😀</span><span>😁</span><span>😂</span><span>🤣</span><span>😃</span><span>😄</span><span>😅</span><span>😆</span><span>😉</span><span>😊</span><span>😋</span><span>😎</span><span>😍</span><span>😘</span><span>🥰</span><span>😗</span>
+                                    </div>
+                                </div>
+                                 <div class="emoji-category">
+                                    <h3><i class="fas fa-gem"></i> Objects</h3>
+                                    <div class="emoji-grid">
+                                        <span>✨</span><span>💡</span><span>🔥</span><span>🎯</span><span>⭐</span><span>🌟</span><span>💯</span><span>📌</span><span>🔖</span><span>📝</span><span>🗂️</span><span>📅</span><span>🎨</span><span>🎭</span><span>🎉</span><span>🏆</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- MOVED: Close button is now a flex item within the new header -->
+                    <button id="close-modal-btn" class="icon-btn modal-close-btn" title="Close editor"><i class="fas fa-times"></i></button>
+                </div>
+                
+                <input type="text" id="note-title" placeholder="✨ Give your note a catchy title..." class="title-input">
+                <div class="editor-toolbar">
+                    <button class="tool-btn" data-action="bold"><i class="fas fa-bold"></i></button>
+                    <button class="tool-btn" data-action="italic"><i class="fas fa-italic"></i></button>
+                    <button class="tool-btn" data-action="underline"><i class="fas fa-underline"></i></button>
+                    <button class="tool-btn" data-action="strikethrough"><i class="fas fa-strikethrough"></i></button>
+                    <button class="tool-btn" data-action="bullet"><i class="fas fa-list-ul"></i></button>
+                </div>
+                <div id="note-content" contenteditable="true" class="content-input"></div>
+                
+                <div class="button-group">
+                    <button id="save-note" class="btn primary"><i class="fas fa-save"></i> Save & Close</button>
+                    <button id="delete-note" class="btn danger"><i class="fas fa-trash"></i> Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="floating-action" id="floating-new-note">
+        <i class="fas fa-plus"></i>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
