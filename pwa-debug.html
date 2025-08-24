@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PWA Debug - Yaadannoo</title>
+    <style>
+        body { font-family: system-ui; padding: 20px; line-height: 1.6; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 8px; }
+        .success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .warning { background: #fff3cd; border: 1px solid #ffeaa7; color: #856404; }
+        .error { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .info { background: #d1ecf1; border: 1px solid #bee5eb; color: #0c5460; }
+        button { padding: 10px 20px; margin: 5px; background: #4f46e5; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #3730a3; }
+        pre { background: #f5f5f5; padding: 15px; border-radius: 5px; overflow-x: auto; }
+        .checklist { list-style: none; padding: 0; }
+        .checklist li { padding: 5px 0; }
+        .checklist .check { color: green; }
+        .checklist .cross { color: red; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Yaadannoo PWA Debug Tool</h1>
+    
+    <div id="pwa-status">
+        <h2>PWA Status Check</h2>
+        <div id="status-results">Running checks...</div>
+    </div>
+    
+    <div>
+        <h2>Manual Actions</h2>
+        <button onclick="triggerInstallPrompt()">Trigger Install Prompt</button>
+        <button onclick="forceShowBanner()">Force Show Banner</button>
+        <button onclick="resetUsageCount()">Reset Usage Count</button>
+        <button onclick="clearDismissTime()">Clear Dismiss Time</button>
+        <button onclick="checkServiceWorker()">Check Service Worker</button>
+    </div>
+    
+    <div>
+        <h2>Debug Information</h2>
+        <pre id="debug-info">Loading...</pre>
+    </div>
+    
+    <div>
+        <h2>Quick Fixes</h2>
+        <button onclick="generateQuickIcons()">Generate Missing Icons</button>
+        <button onclick="goToIconGenerator()">Open Icon Generator</button>
+        <button onclick="goBackToApp()">Back to App</button>
+    </div>
+
+    <script>
+        let deferredPrompt = null;
+        
+        // PWA Status Check
+        async function checkPWAStatus() {
+            const results = document.getElementById('status-results');
+            const checks = [];
+            
+            // Check if PWA criteria are met
+            checks.push({
+                name: 'Service Worker',
+                status: 'serviceWorker' in navigator,
+                message: 'serviceWorker' in navigator ? 'Supported' : 'Not supported'
+            });
+            
+            checks.push({
+                name: 'HTTPS/Localhost',
+                status: location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1',
+                message: location.protocol === 'https:' || location.hostname === 'localhost' ? 'Secure context' : 'Requires HTTPS or localhost'
+            });
+            
+            // Check manifest from main app
+            let manifestFound = false;
+            try {
+                const response = await fetch('./manifest.json');
+                manifestFound = response.ok;
+            } catch (e) {
+                manifestFound = false;
+            }
+            
+            checks.push({
+                name: 'Manifest',
+                status: manifestFound,
+                message: manifestFound ? 'Manifest accessible' : 'Manifest not found or invalid'
+            });
+            
+            // Check if we have basic icons
+            let iconsFound = false;
+            try {
+                const iconResponse = await fetch('./icons/icon-192x192.png');
+                iconsFound = iconResponse.ok;
+            } catch (e) {
+                iconsFound = false;
+            }
+            
+            checks.push({
+                name: 'App Icons',
+                status: iconsFound,
+                message: iconsFound ? 'Icons found' : 'Icons missing - generate them first!'
+            });
+            
+            checks.push({
+                name: 'Install Prompt Available',
+                status: !!deferredPrompt,
+                message: deferredPrompt ? 'Install prompt ready' : 'No install prompt captured (need icons + usage)'
+            });
+            
+            const html = checks.map(check => 
+                `<div class="status ${check.status ? 'success' : 'error'}">
+                    ${check.status ? '✅' : '❌'} ${check.name}: ${check.message}
+                </div>`
+            ).join('');
+            
+            results.innerHTML = html;
+        }
+        
+        // Debug Information
+        function updateDebugInfo() {
+            const debugInfo = {
+                userAgent: navigator.userAgent,
+                standalone: window.matchMedia('(display-mode: standalone)').matches,
+                installPromptShown: localStorage.getItem('installPromptShown'),
+                appUsageCount: localStorage.getItem('appUsageCount') || '0',
+                installPromptDismissed: localStorage.getItem('installPromptDismissed'),
+                appInstalled: localStorage.getItem('appInstalled'),
+                serviceWorkerReady: false,
+                manifestFound: !!document.querySelector('link[rel="manifest"]'),
+                currentURL: window.location.href,
+                deferredPromptAvailable: !!deferredPrompt
+            };
+            
+            // Check service worker
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.ready.then(() => {
+                    debugInfo.serviceWorkerReady = true;
+                    document.getElementById('debug-info').textContent = JSON.stringify(debugInfo, null, 2);
+                });
+            }
+            
+            document.getElementById('debug-info').textContent = JSON.stringify(debugInfo, null, 2);
+        }
+        
+        // Manual Actions
+        function triggerInstallPrompt() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then(result => {
+                    alert(`Install prompt result: ${result.outcome}`);
+                    deferredPrompt = null;
+                });
+            } else {
+                alert('No install prompt available. Try using the app more or check PWA requirements.');
+            }
+        }
+        
+        function forceShowBanner() {
+            // Try to trigger the custom banner
+            localStorage.setItem('appUsageCount', '5'); // Trigger threshold
+            localStorage.removeItem('installPromptDismissed');
+            localStorage.removeItem('appInstalled');
+            alert('Usage count set to 5. Go back to the app to see the banner.');
+        }
+        
+        function resetUsageCount() {
+            localStorage.removeItem('appUsageCount');
+            alert('Usage count reset to 0');
+            updateDebugInfo();
+        }
+        
+        function clearDismissTime() {
+            localStorage.removeItem('installPromptDismissed');
+            alert('Dismiss time cleared');
+            updateDebugInfo();
+        }
+        
+        function checkServiceWorker() {
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistrations().then(registrations => {
+                    alert(`Found ${registrations.length} service worker registrations`);
+                    console.log('Service Workers:', registrations);
+                });
+            } else {
+                alert('Service Worker not supported');
+            }
+        }
+        
+        function generateQuickIcons() {
+            // Create a simple 192x192 icon
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = 192;
+            canvas.height = 192;
+            
+            // Fill with app color
+            ctx.fillStyle = '#4f46e5';
+            ctx.fillRect(0, 0, 192, 192);
+            
+            // Add white 'Y'
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 120px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('Y', 96, 96);
+            
+            // Download
+            canvas.toBlob(blob => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'icon-192x192.png';
+                a.click();
+                URL.revokeObjectURL(url);
+                alert('Basic 192x192 icon generated. Save it to the icons/ folder and refresh the app.');
+            });
+        }
+        
+        function goToIconGenerator() {
+            window.open('./generate-icons.html', '_blank');
+        }
+        
+        function goBackToApp() {
+            window.location.href = './index.html';
+        }
+        
+        // Listen for beforeinstallprompt
+        window.addEventListener('beforeinstallprompt', (e) => {
+            console.log('beforeinstallprompt event fired');
+            e.preventDefault();
+            deferredPrompt = e;
+            checkPWAStatus();
+            updateDebugInfo();
+        });
+        
+        // Initialize
+        window.onload = () => {
+            checkPWAStatus();
+            updateDebugInfo();
+            
+            // Check every 2 seconds for updates
+            setInterval(() => {
+                checkPWAStatus();
+                updateDebugInfo();
+            }, 2000);
+        };
+    </script>
+</body>
+</html>

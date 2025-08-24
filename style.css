@@ -60,10 +60,114 @@ body {
 .container { max-width: 1200px; margin: 0 auto; padding: clamp(1rem, 4vw, 2rem); }
 
 /* --- Header --- */
-.app-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; gap: 1rem; }
+.app-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; gap: 1rem; position: relative; }
 .header-content h1 { font-size: clamp(1.8rem, 6vw, 2.5rem); font-weight: 800; background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary)); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .tagline { font-size: clamp(0.9rem, 3vw, 1.1rem); margin-top: 0.25rem; color: var(--text-secondary); }
-.header-actions { display: flex; gap: 0.75rem; }
+.header-actions { display: flex; gap: 0.75rem; align-items: center; }
+
+/* Mobile Menu Button */
+.mobile-menu-btn { display: none; }
+.desktop-actions { display: flex; gap: 0.75rem; }
+
+/* Mobile Sidebar */
+.mobile-sidebar {
+    position: fixed;
+    top: 0;
+    left: -300px;
+    width: 280px;
+    height: 100vh;
+    background: var(--bg-secondary);
+    border-right: 1px solid var(--border);
+    z-index: 1200;
+    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow-y: auto;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+}
+
+.mobile-sidebar.open {
+    left: 0;
+}
+
+.sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1100;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0s 0.3s;
+}
+
+.sidebar-overlay.visible {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.3s ease;
+}
+
+.sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--accent-primary);
+    color: white;
+}
+
+.sidebar-header h3 {
+    margin: 0;
+    font-size: 1.25rem;
+}
+
+.sidebar-content {
+    padding: 1rem;
+}
+
+.sidebar-section {
+    margin-bottom: 2rem;
+}
+
+.sidebar-section h4 {
+    margin: 0 0 1rem 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.sidebar-btn {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 0.75rem;
+    margin: 0.25rem 0;
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text-primary);
+    text-decoration: none;
+    cursor: pointer;
+    transition: var(--transition);
+    font-size: 0.9rem;
+    gap: 0.5rem;
+}
+
+.sidebar-btn:hover,
+.sidebar-btn.active {
+    background: var(--accent-primary);
+    color: white;
+    border-color: var(--accent-primary);
+    transform: translateX(5px);
+}
+
+.sidebar-btn i {
+    width: 16px;
+    text-align: center;
+}
 
 /* --- Note List --- */
 .list-header { display: flex; flex-direction: column; align-items: flex-start; margin-bottom: 1.5rem; gap: 1rem; }
@@ -75,12 +179,363 @@ body {
 #search-notes:focus { outline: none; border-color: var(--accent-primary); }
 .notes-container { display: grid; gap: 1rem; grid-template-columns: 1fr; }
 
-/* --- Note Card --- */
-.note-card { background: var(--bg-secondary); border-radius: var(--radius); box-shadow: var(--card-shadow); cursor: pointer; transition: var(--transition); border: 1px solid var(--border); display: flex; align-items: center; gap: 1rem; padding: 1rem; animation: fadeIn 0.4s ease forwards; opacity: 0; }
-.note-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px var(--shadow), 0 4px 6px -2px var(--shadow); border-color: var(--accent-primary); }
-.note-card-emoji { font-size: 2rem; background: var(--bg-primary); width: 50px; height: 50px; flex-shrink: 0; display: grid; place-items: center; border-radius: var(--radius); }
-.note-card-content { min-width: 0; }
-.note-card-content h3 { font-size: 1.1rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* --- Enhanced Note Cards --- */
+.note-card { 
+    background: var(--bg-secondary); 
+    border-radius: var(--radius); 
+    box-shadow: var(--card-shadow); 
+    cursor: pointer; 
+    transition: var(--transition); 
+    border: 1px solid var(--border); 
+    padding: 1rem; 
+    opacity: 0;
+    transform: translateY(20px);
+    position: relative;
+    overflow: hidden;
+}
+
+.note-card.visible {
+    animation: slideInUp 0.4s ease forwards;
+}
+
+.note-card:hover { 
+    transform: translateY(-5px); 
+    box-shadow: 0 10px 25px -5px var(--shadow), 0 10px 10px -5px var(--shadow); 
+    border-color: var(--accent-primary); 
+}
+
+.note-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.75rem;
+}
+
+.note-card-emoji { 
+    font-size: 2rem; 
+    background: var(--bg-primary); 
+    width: 50px; 
+    height: 50px; 
+    flex-shrink: 0; 
+    display: grid; 
+    place-items: center; 
+    border-radius: var(--radius); 
+    box-shadow: 0 2px 4px var(--shadow);
+}
+
+.note-card-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.25rem;
+}
+
+.note-tag {
+    background: var(--accent-primary);
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.note-time {
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+}
+
+.note-card-content { 
+    min-width: 0;
+    margin-bottom: 1rem;
+}
+
+.note-card-content h3 { 
+    font-size: 1.1rem; 
+    font-weight: 600; 
+    margin: 0 0 0.5rem 0;
+    white-space: nowrap; 
+    overflow: hidden; 
+    text-overflow: ellipsis;
+    color: var(--text-primary);
+}
+
+.note-preview {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.4;
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.note-card-actions {
+    display: flex;
+    gap: 0.5rem;
+    opacity: 0;
+    transition: var(--transition);
+    position: absolute;
+    bottom: 1rem;
+    right: 1rem;
+}
+
+.note-card:hover .note-card-actions {
+    opacity: 1;
+}
+
+.quick-edit-btn,
+.quick-view-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 50%;
+    background: var(--accent-primary);
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    transition: var(--transition);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.quick-view-btn {
+    background: var(--success);
+}
+
+.quick-edit-btn:hover,
+.quick-view-btn:hover {
+    transform: scale(1.1);
+}
+
+@keyframes slideInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* --- Note Preview Modal --- */
+.note-preview-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0s 0.3s;
+}
+
+.note-preview-modal.visible {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.3s ease;
+}
+
+.note-preview-modal.closing {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.preview-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+}
+
+.preview-content {
+    position: relative;
+    background: var(--bg-secondary);
+    border-radius: var(--radius);
+    width: 100%;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    transform: scale(0.9) translateY(20px);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.note-preview-modal.visible .preview-content {
+    transform: scale(1) translateY(0);
+}
+
+.preview-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 1.5rem 1.5rem 1rem;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    color: white;
+}
+
+.preview-title {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex: 1;
+    min-width: 0;
+}
+
+.preview-emoji {
+    font-size: 2rem;
+    background: rgba(255,255,255,0.2);
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.preview-title h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.preview-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+.preview-edit-btn,
+.preview-close-btn {
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+}
+
+.preview-edit-btn:hover,
+.preview-close-btn:hover {
+    background: rgba(255,255,255,0.3);
+    transform: scale(1.1);
+}
+
+.preview-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background: var(--bg-primary);
+    border-bottom: 1px solid var(--border);
+}
+
+.preview-tag {
+    background: var(--accent-primary);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.preview-time {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.preview-body {
+    padding: 1.5rem;
+    overflow-y: auto;
+    max-height: 50vh;
+    line-height: 1.6;
+    font-size: 1rem;
+    color: var(--text-primary);
+}
+
+.preview-body h1,
+.preview-body h2,
+.preview-body h3,
+.preview-body h4,
+.preview-body h5,
+.preview-body h6 {
+    margin: 1.5em 0 0.5em 0;
+    color: var(--accent-primary);
+}
+
+.preview-body p {
+    margin: 0.75em 0;
+}
+
+.preview-body ul,
+.preview-body ol {
+    margin: 0.75em 0;
+    padding-left: 1.5rem;
+}
+
+.preview-body li {
+    margin: 0.25em 0;
+}
+
+.preview-body strong {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.preview-body em {
+    font-style: italic;
+    color: var(--text-secondary);
+}
+
+/* Mobile adjustments for preview */
+@media (max-width: 600px) {
+    .note-preview-modal {
+        padding: 0;
+    }
+    
+    .preview-content {
+        width: 100%;
+        height: 100%;
+        max-height: 100vh;
+        border-radius: 0;
+    }
+    
+    .preview-header {
+        padding: 1rem;
+    }
+    
+    .preview-title h2 {
+        font-size: 1.25rem;
+    }
+    
+    .preview-emoji {
+        width: 50px;
+        height: 50px;
+        font-size: 1.5rem;
+    }
+    
+    .preview-body {
+        max-height: calc(100vh - 200px);
+        padding: 1rem;
+    }
+}
 
 /* --- Modal --- */
 .modal-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 0; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0s 0.3s; }
@@ -132,19 +587,190 @@ body {
 /* STYLING FIX: Remove absolute positioning from close button */
 .modal-close-btn:hover { background-color: var(--danger); color: white; }
 
-/* --- Emoji Picker --- */
+/* --- Enhanced Emoji Picker --- */
 #emoji-picker-container { position: relative; }
-.emoji-picker { position: absolute; top: calc(100% + 10px); right: 0; width: 300px; background: var(--bg-secondary); border-radius: var(--radius); box-shadow: 0 10px 30px var(--shadow); padding: 0.5rem; z-index: 1020; max-height: 250px; overflow-y: auto; transform-origin: top right; transform: scale(0.95) translateY(-10px); opacity: 0; visibility: hidden; transition: transform 0.2s ease, opacity 0.2s ease, visibility 0s 0.2s; }
+.emoji-picker { position: absolute; top: calc(100% + 10px); right: 0; width: 320px; background: var(--bg-secondary); border-radius: var(--radius); box-shadow: 0 10px 30px var(--shadow); padding: 0; z-index: 1020; max-height: 400px; overflow: hidden; transform-origin: top right; transform: scale(0.95) translateY(-10px); opacity: 0; visibility: hidden; transition: transform 0.2s ease, opacity 0.2s ease, visibility 0s 0.2s; border: 1px solid var(--border); }
 .emoji-picker.visible { transform: scale(1) translateY(0); opacity: 1; visibility: visible; transition: transform 0.2s ease, opacity 0.2s ease; }
-.emoji-category h3 { color: var(--text-secondary); margin: 0.5rem; font-size: 0.9rem; font-weight: 500; }
+
+.emoji-search {
+    padding: 1rem 1rem 0.5rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.emoji-search input {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
+.emoji-search input:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+}
+
+.emoji-tabs {
+    display: flex;
+    padding: 0.5rem;
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+    gap: 0.25rem;
+}
+
+.emoji-tab {
+    min-width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+}
+
+.emoji-tab:hover {
+    background: var(--bg-primary);
+}
+
+.emoji-tab.active {
+    background: var(--accent-primary);
+    color: white;
+}
+
+.emoji-content {
+    max-height: 250px;
+    overflow-y: auto;
+    padding: 0.5rem;
+}
+
 .emoji-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(32px, 1fr)); gap: 0.25rem; }
-.emoji-grid span { aspect-ratio: 1; display: grid; place-items: center; border-radius: 8px; cursor: pointer; font-size: 1.4rem; transition: var(--transition); user-select: none; }
-.emoji-grid span:hover { background: var(--bg-primary); transform: scale(1.2); }
+.emoji-item { aspect-ratio: 1; display: grid; place-items: center; border-radius: 6px; cursor: pointer; font-size: 1.2rem; transition: var(--transition); user-select: none; padding: 0.25rem; }
+.emoji-item:hover { background: var(--bg-primary); transform: scale(1.2); }
+
+.no-results {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
 
 /* --- Floating Action Button & Animations --- */
 .floating-action { position: fixed; width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(45deg, var(--accent-primary), var(--accent-secondary)); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 900; transition: var(--transition); bottom: 1rem; right: 1rem; }
 .floating-action:hover { transform: scale(1.1) rotate(90deg); }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* --- PWA INSTALL PROMPT --- */
+.install-prompt {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+    box-shadow: 0 4px 12px var(--shadow);
+    z-index: 1100;
+    transform: translateY(0);
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.install-prompt.hidden {
+    transform: translateY(-100%);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.install-content {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.install-icon {
+    background: var(--accent-primary);
+    color: white;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.install-text {
+    flex-grow: 1;
+    min-width: 0;
+}
+
+.install-text h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    color: var(--text-primary);
+}
+
+.install-text p {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.install-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-shrink: 0;
+}
+
+.install-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+.btn.secondary {
+    background: var(--bg-primary);
+    color: var(--text-secondary);
+    border-color: var(--border);
+}
+
+.btn.secondary:hover {
+    background: var(--border);
+    color: var(--text-primary);
+}
+
+/* PWA Install Prompt Responsive Design */
+@media (max-width: 600px) {
+    .install-content {
+        flex-direction: column;
+        text-align: center;
+        gap: 0.75rem;
+        padding: 1rem 0.5rem;
+    }
+    
+    .install-actions {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .install-btn {
+        flex: 1;
+        min-width: 120px;
+    }
+    
+    .install-text p {
+        font-size: 0.85rem;
+    }
+}
 
 /* --- Scrollbar --- */
 ::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -154,6 +780,78 @@ body {
 [data-theme="forest"]::-webkit-scrollbar-thumb { background: #1A4D2E; }
 
 /* --- RESPONSIVE DESIGN --- */
+@media (max-width: 768px) {
+    /* Mobile-first: Show hamburger menu */
+    .mobile-menu-btn {
+        display: grid;
+        place-items: center;
+    }
+    
+    .desktop-actions {
+        display: none;
+    }
+    
+    /* Adjust container padding for mobile */
+    .container {
+        padding: 1rem;
+    }
+    
+    /* Make notes container single column on mobile */
+    .notes-container {
+        grid-template-columns: 1fr;
+    }
+    
+    /* Adjust header for mobile */
+    .app-header {
+        margin-bottom: 1rem;
+    }
+    
+    .header-content h1 {
+        font-size: 1.5rem;
+    }
+    
+    .tagline {
+        font-size: 0.85rem;
+    }
+    
+    /* Make emoji picker full width on mobile */
+    .emoji-picker {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0.95);
+        width: calc(100vw - 2rem);
+        max-width: 400px;
+        max-height: 60vh;
+    }
+    
+    .emoji-picker.visible {
+        transform: translate(-50%, -50%) scale(1);
+    }
+    
+    /* Touch-friendly button sizes */
+    .icon-btn {
+        min-width: 48px;
+        min-height: 48px;
+    }
+    
+    .note-card {
+        padding: 1.25rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    /* Improve modal on mobile */
+    .modal-content {
+        width: 100%;
+        height: 100%;
+        border-radius: 0;
+    }
+    
+    .editor {
+        padding: 1rem;
+    }
+}
+
 @media (min-width: 600px) {
     .notes-container { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
     .list-header { flex-direction: row; justify-content: space-between; align-items: center; }
@@ -169,6 +867,10 @@ body {
     .modal-container.visible .modal-content { transform: scale(1); }
     .editor { padding: 1.5rem; }
     .floating-action { bottom: 2rem; right: 2rem; }
+    
+    /* Hide mobile menu on desktop */
+    .mobile-menu-btn { display: none; }
+    .desktop-actions { display: flex; }
 }
 
 /* --- SWEETALERT THEME COMPATIBILITY --- */

@@ -4,11 +4,51 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>✨ Yaadannoo - Your Emoji-Powered Notes</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="A beautiful, emoji-powered note-taking app that works offline. Organize your thoughts with tags, emojis, and rich text editing.">
+    <meta name="theme-color" content="#4f46e5">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Yaadannoo">
+    <meta name="msapplication-TileColor" content="#4f46e5">
+    <meta name="msapplication-config" content="browserconfig.xml">
+    
+    <!-- PWA Manifest and Icons -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-96x96.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="icons/icon-72x72.png">
+    
+    <!-- External Dependencies -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+    
+    <!-- App Styles -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- PWA Install Prompt -->
+    <div id="install-prompt" class="install-prompt hidden">
+        <div class="install-content">
+            <div class="install-icon">
+                <i class="fas fa-download"></i>
+            </div>
+            <div class="install-text">
+                <h3>Install Yaadannoo</h3>
+                <p>Get the full app experience! Install Yaadannoo for quick access and offline support.</p>
+            </div>
+            <div class="install-actions">
+                <button id="install-button" class="btn primary install-btn">
+                    <i class="fas fa-plus"></i> Install App
+                </button>
+                <button id="install-dismiss" class="btn secondary">
+                    <i class="fas fa-times"></i> Maybe Later
+                </button>
+            </div>
+        </div>
+    </div>
     <div class="container">
         <header class="app-header">
             <div class="header-content">
@@ -16,14 +56,67 @@
                 <p class="tagline">Your thoughts, beautifully organized <span class="waving-hand">👋</span></p>
             </div>
             <div class="header-actions">
-                <button id="theme-toggle" class="icon-btn" title="Change theme">
-                    <i class="fas fa-sun"></i>
+                <!-- Mobile Menu Button -->
+                <button id="mobile-menu-btn" class="icon-btn mobile-menu-btn" title="Menu">
+                    <i class="fas fa-bars"></i>
                 </button>
-                <button id="new-note-btn" class="icon-btn" title="New Note">
-                    <i class="fas fa-plus"></i>
-                </button>
+                <!-- Desktop Actions -->
+                <div class="desktop-actions">
+                    <button id="theme-toggle" class="icon-btn" title="Change theme">
+                        <i class="fas fa-sun"></i>
+                    </button>
+                    <button id="new-note-btn" class="icon-btn" title="New Note">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
             </div>
         </header>
+
+        <!-- Mobile Sidebar Menu -->
+        <div id="mobile-sidebar" class="mobile-sidebar">
+            <div class="sidebar-header">
+                <h3>✨ Yaadannoo</h3>
+                <button id="close-sidebar-btn" class="icon-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="sidebar-content">
+                <div class="sidebar-section">
+                    <h4>📝 Actions</h4>
+                    <button id="sidebar-new-note" class="sidebar-btn">
+                        <i class="fas fa-plus"></i> New Note
+                    </button>
+                    <button id="sidebar-search" class="sidebar-btn">
+                        <i class="fas fa-search"></i> Search Notes
+                    </button>
+                </div>
+                <div class="sidebar-section">
+                    <h4>🎨 Appearance</h4>
+                    <button id="sidebar-theme" class="sidebar-btn">
+                        <i class="fas fa-palette"></i> Change Theme
+                    </button>
+                </div>
+                <div class="sidebar-section">
+                    <h4>🚀 Categories</h4>
+                    <button class="sidebar-btn emoji-filter" data-filter="all">
+                        📋 All Notes
+                    </button>
+                    <button class="sidebar-btn emoji-filter" data-filter="idea">
+                        💡 Ideas
+                    </button>
+                    <button class="sidebar-btn emoji-filter" data-filter="task">
+                        ✅ Tasks
+                    </button>
+                    <button class="sidebar-btn emoji-filter" data-filter="meeting">
+                        📹 Meetings
+                    </button>
+                    <button class="sidebar-btn emoji-filter" data-filter="personal">
+                        ❤️ Personal
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div id="sidebar-overlay" class="sidebar-overlay"></div>
 
         <div class="notes-list" id="notes-list">
             <div class="list-header">
@@ -56,17 +149,21 @@
                                 <i class="far fa-smile"></i>
                             </button>
                             <div id="emoji-picker" class="emoji-picker">
-                                 <div class="emoji-category">
-                                    <h3><i class="fas fa-smile"></i> Smileys</h3>
-                                    <div class="emoji-grid">
-                                        <span>😀</span><span>😁</span><span>😂</span><span>🤣</span><span>😃</span><span>😄</span><span>😅</span><span>😆</span><span>😉</span><span>😊</span><span>😋</span><span>😎</span><span>😍</span><span>😘</span><span>🥰</span><span>😗</span>
-                                    </div>
+                                <div class="emoji-search">
+                                    <input type="text" id="emoji-search-input" placeholder="Search emojis..." />
                                 </div>
-                                 <div class="emoji-category">
-                                    <h3><i class="fas fa-gem"></i> Objects</h3>
-                                    <div class="emoji-grid">
-                                        <span>✨</span><span>💡</span><span>🔥</span><span>🎯</span><span>⭐</span><span>🌟</span><span>💯</span><span>📌</span><span>🔖</span><span>📝</span><span>🗂️</span><span>📅</span><span>🎨</span><span>🎭</span><span>🎉</span><span>🏆</span>
-                                    </div>
+                                <div class="emoji-tabs">
+                                    <button class="emoji-tab active" data-category="recent">🕒</button>
+                                    <button class="emoji-tab" data-category="smileys">😊</button>
+                                    <button class="emoji-tab" data-category="people">👋</button>
+                                    <button class="emoji-tab" data-category="nature">🌿</button>
+                                    <button class="emoji-tab" data-category="food">🍕</button>
+                                    <button class="emoji-tab" data-category="activities">⚽</button>
+                                    <button class="emoji-tab" data-category="objects">📱</button>
+                                    <button class="emoji-tab" data-category="symbols">💡</button>
+                                </div>
+                                <div id="emoji-content" class="emoji-content">
+                                    <!-- Dynamic content will be loaded here -->
                                 </div>
                             </div>
                         </div>
@@ -98,5 +195,57 @@
     </div>
 
     <script src="script.js"></script>
+    
+    <!-- PWA Service Worker Registration -->
+    <script>
+        // Register service worker for PWA functionality
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', async () => {
+                try {
+                    const registration = await navigator.serviceWorker.register('./sw.js');
+                    console.log('SW registered: ', registration);
+                    
+                    // Handle service worker updates
+                    registration.addEventListener('updatefound', () => {
+                        const newWorker = registration.installing;
+                        if (newWorker) {
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    // New content is available, prompt user to refresh
+                                    if (typeof swal !== 'undefined') {
+                                        swal({
+                                            title: 'App Updated!',
+                                            text: 'A new version of Yaadannoo is available. Refresh to get the latest features.',
+                                            icon: 'info',
+                                            buttons: ['Later', 'Refresh Now']
+                                        }).then((willRefresh) => {
+                                            if (willRefresh) {
+                                                window.location.reload();
+                                            }
+                                        });
+                                    }
+                                }
+                            });
+                        }
+                    });
+                } catch (error) {
+                    console.log('SW registration failed: ', error);
+                }
+            });
+        }
+        
+        // Handle service worker messages
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.addEventListener('message', event => {
+                console.log('Message from SW:', event.data);
+                
+                if (event.data && event.data.type === 'SYNC_COMPLETE') {
+                    if (typeof showToast === 'function') {
+                        showToast('Notes synced successfully!', 'success');
+                    }
+                }
+            });
+        }
+    </script>
 </body>
 </html>

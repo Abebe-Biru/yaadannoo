@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Icon Generator for Yaadannoo PWA</title>
+</head>
+<body>
+    <h1>Yaadannoo PWA Icon Generator</h1>
+    <p>This tool automatically generates and downloads all required icon sizes for the PWA.</p>
+    <p><strong>Instructions:</strong> The icons will download automatically. Move them to the <code>icons/</code> folder.</p>
+    
+    <div id="icons-container">
+        <p>Loading...</p>
+    </div>
+    
+    <script>
+        // Icon sizes needed for PWA
+        const sizes = [72, 96, 128, 144, 152, 192, 384, 512];
+        
+        function generateIcon(size) {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = size;
+            canvas.height = size;
+            
+            // Create gradient background
+            const gradient = ctx.createLinearGradient(0, 0, size, size);
+            gradient.addColorStop(0, '#4f46e5');
+            gradient.addColorStop(1, '#7c3aed');
+            
+            // Fill background
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, size, size);
+            
+            // Draw white letter 'Y'
+            ctx.fillStyle = 'white';
+            ctx.font = `bold ${size * 0.6}px Arial, sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('Y', size / 2, size / 2);
+            
+            return canvas;
+        }
+        
+        function downloadIcon(canvas, size) {
+            canvas.toBlob(function(blob) {
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `icon-${size}x${size}.png`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            });
+        }
+        
+        function generateAllIcons() {
+            const container = document.getElementById('icons-container');
+            container.innerHTML = '<h3>Generating icons...</h3>';
+            
+            sizes.forEach((size, index) => {
+                setTimeout(() => {
+                    const canvas = generateIcon(size);
+                    
+                    // Add preview
+                    const preview = document.createElement('div');
+                    preview.style.cssText = 'display: inline-block; margin: 10px; text-align: center;';
+                    
+                    const previewCanvas = generateIcon(64); // Small preview
+                    previewCanvas.style.cssText = 'border: 1px solid #ccc; border-radius: 8px;';
+                    
+                    const label = document.createElement('div');
+                    label.textContent = `${size}x${size}`;
+                    label.style.marginTop = '5px';
+                    
+                    const downloadBtn = document.createElement('button');
+                    downloadBtn.textContent = 'Download';
+                    downloadBtn.style.cssText = 'margin-top: 5px; padding: 5px 10px; background: #4f46e5; color: white; border: none; border-radius: 4px; cursor: pointer;';
+                    downloadBtn.onclick = () => downloadIcon(canvas, size);
+                    
+                    preview.appendChild(previewCanvas);
+                    preview.appendChild(label);
+                    preview.appendChild(downloadBtn);
+                    container.appendChild(preview);
+                    
+                    // Auto-download
+                    downloadIcon(canvas, size);
+                    
+                    if (index === sizes.length - 1) {
+                        const msg = document.createElement('div');
+                        msg.innerHTML = '<h3 style="color: green;">✅ All icons generated and downloaded!</h3><p>Move the downloaded PNG files to the <code>icons/</code> folder in your app.</p>';
+                        container.appendChild(msg);
+                    }
+                }, index * 500); // Stagger downloads
+            });
+        }
+        
+        // Auto-generate icons when page loads
+        window.onload = () => {
+            setTimeout(generateAllIcons, 1000);
+        };
+    </script>
+    
+    <style>
+        body { font-family: system-ui; padding: 20px; }
+        a { color: #4f46e5; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+    </style>
+</body>
+</html>
